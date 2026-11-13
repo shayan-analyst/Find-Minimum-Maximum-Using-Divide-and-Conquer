@@ -42,7 +42,7 @@ Open your browser:
 
 http://127.0.0.1:8000
 
-The Python backend executes the algorithm through `algorithm.py` and provides step-by-step execution data to the web interface.
+This mode uses the JavaScript implementation of the algorithm and does not require a Python server.
 
 ### Option 2: Run Directly in Browser
 
