@@ -1,23 +1,51 @@
-# AlgoVision: Min & Max by Divide and Conquer
+# Find Minimum & Maximum Using Divide and Conquer
 
-## Chalane ke 2 tareeqe
-1. **Python ke saath (recommended, teacher ki requirement):**
-   - Windows: `START_PRESENTATION.bat` par double-click. (Ya terminal mein `python server.py`.)
-   - Browser khud khulta hai: http://127.0.0.1:8000
-   - Live lab ke saare steps `algorithm.py` (Python) se aate hain. Lab ke title ke paas badge dikhta hai: **Engine: Python (algorithm.py)**.
-   - Koi package install nahi karna, sirf Python 3.8+.
-2. **Sirf browser:** `index.html` double-click. Yahan wahi algorithm JavaScript mein chalta hai (badge: Engine: JavaScript).
+An interactive web-based visualization of the **Divide and Conquer algorithm** for finding the minimum and maximum elements in an array.
 
-## Files
-- `algorithm.py`: algorithm. Part 1 = saaf `min_max()` jo viva mein samjhana hai, Part 2 = step-by-step trace jo web page ko jata hai.
-- `server.py`: chhota Python server. `POST /api/trace` algorithm.py chalata hai, `GET /api/health` status deta hai.
-- `index.html`, `style.css`, `app.js`: presentation UI.
-- `REVIEW_URDU.md`: aapke purane project ka review.
+This project was developed as an **instructor-assigned academic project** for the **Design and Analysis of Algorithms (DAA)** course.
 
-## Terminal se
-    python algorithm.py 38 12 77 5 41 90 23 66     (min, max, comparisons)
-    python algorithm.py --test                      (5000 random arrays ka self-test)
+## Features
 
-## Shortcuts
-Left/Right (sections, lab me steps), Space (lab play/pause), F (full screen), T (theme), ? (help).
-`app.js` ke shuru me `CONFIG` se naam/date/university badal sakte hain.
+- Interactive algorithm visualization
+- Step-by-step execution
+- Recursion tree visualization
+- Live minimum and maximum tracking
+- Comparison counting and analysis
+- Python algorithm execution
+- JavaScript-based offline execution
+- Algorithm test cases
+
+## Technologies Used
+
+- Python 3
+- JavaScript
+- HTML5
+- CSS3
+
+## Getting Started
+
+### Option 1: Run with Python (Recommended)
+
+Python 3.8 or later is required.
+
+**Windows:**
+
+Double-click `START_PRESENTATION.bat`.
+
+Alternatively, run:
+
+```bash
+python server.py
+```
+
+Open your browser:
+
+http://127.0.0.1:8000
+
+The Python backend executes the algorithm through `algorithm.py` and provides step-by-step execution data to the web interface.
+
+### Option 2: Run Directly in Browser
+
+Open `index.html` in your browser.
+
+This mode uses the JavaScript implementation of the algorithm and does not require a
