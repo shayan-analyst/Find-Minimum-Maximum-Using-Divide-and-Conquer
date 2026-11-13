@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>AlgoVision Min-Max</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+<div class="app">
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="AlgoVision home">
+      <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
+        <path d="M16 6v6M16 12l-7 7M16 12l7 7" class="lg-line"/>
+        <circle cx="16" cy="6" r="3.4" class="lg-a"/><circle cx="9" cy="21" r="3.4" class="lg-b"/><circle cx="23" cy="21" r="3.4" class="lg-c"/>
+      </svg>
+      <span class="brand-txt"><b>AlgoVision</b><small id="brandSub">Design Analysis and Algorithm</small></span>
+    </a>
+    <nav class="pills" id="pills" aria-label="Sections"></nav>
+    <div class="tools">
+      <button class="icon-btn" id="btnHelp" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
+      <button class="icon-btn" id="btnTheme" title="Switch theme (T)" aria-label="Switch theme">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
+      </button>
+      <button class="icon-btn" id="btnFull" title="Full screen (F)" aria-label="Full screen">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+  </header>
+
+  <main class="stage" id="stage">
+
+    <!-- 1 HOME -->
+    <section class="slide" id="home" aria-label="Home">
+      <div class="slide-inner hero">
+        <div class="hero-copy">
+          <p class="kicker rv" style="--d:0" id="kicker">Design Analysis and Algorithm</p>
+          <h1 class="rv" style="--d:1"><span>Minimum &amp; Maximum</span><span class="h1b">by Divide &amp; Conquer</span></h1>
+          <p class="lead rv" style="--d:2">Find the smallest and the largest element of an array and count every comparison. Split the array, solve both halves, then combine them with exactly two comparisons.</p>
+          <div class="hero-cta rv" style="--d:3">
+            <button class="btn primary" data-go="lab">Open the live lab</button>
+            <button class="btn" data-go="problem">Start the presentation</button>
+          </div>
+          <ul class="facts rv" style="--d:4">
+            <li><b>3n/2 &minus; 2</b><span>comparisons when n = 2<sup>k</sup></span></li>
+            <li><b>2(n &minus; 1)</b><span>for the plain scan</span></li>
+            <li><b>&Theta;(n) &middot; O(log n)</b><span>time &middot; stack space</span></li>
+          </ul>
+          <div class="team rv" style="--d:5" id="teamChips"></div>
+        </div>
+        <div class="hero-demo glass rv" style="--d:3">
+          <div class="demo-head"><span class="live-dot"></span> Live recursion, playing on its own</div>
+          <div class="bars bars-mini" id="heroBars"></div>
+          <div class="demo-tree"><svg id="heroTree" role="img" aria-label="Recursion tree growing step by step"></svg></div>
+          <div class="demo-foot"><span id="heroMsg">Starting&hellip;</span><span class="demo-count">comparisons <b id="heroComps">0</b></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 PROBLEM -->
+    <section class="slide" id="problem" aria-label="Problem">
+      <div class="slide-inner">
+        <header class="slide-head rv" style="--d:0"><h2>Find the smallest and the largest. Count every comparison.</h2><p class="sub">The question this project answers, and the baseline we have to beat.</p></header>
+        <div class="two">
+          <div class="stack">
+            <article class="card rv" style="--d:1">
+              <h3>The task</h3>
+              <dl class="io">
+                <dt>Input</dt><dd>An array <code>A</code> of <i>n</i> integers</dd>
+                <dt>Output</dt><dd><code>min(A)</code>, <code>max(A)</code> and the number of element comparisons used</dd>
+                <dt>Method</dt><dd>Divide and conquer</dd>
+              </dl>
+            </article>
+            <article class="card rv" style="--d:2">
+              <h3>The straightforward scan</h3>
+<pre class="code mini">min &larr; max &larr; A[1]
+for i &larr; 2 to n
+    if A[i] &lt; min then min &larr; A[i]     <span class="c">// 1 comparison</span>
+    if A[i] &gt; max then max &larr; A[i]     <span class="c">// 1 comparison</span></pre>
+              <p>Two comparisons for each of the other <i>n</i> &minus; 1 elements, so it always costs <b>2(n &minus; 1)</b>.</p>
+            </article>
+            <article class="card callout rv" style="--d:3">
+              <h3>Can divide and conquer use fewer?</h3>
+              <p>Yes. For n = 2<sup>k</sup> it needs <b>3n/2 &minus; 2</b>, about <b>25% fewer</b>. The next slides show where every one of those comparisons comes from.</p>
+            </article>
+          </div>
+          <article class="card chart-card rv" style="--d:2">
+            <div class="card-h"><h3>Comparisons needed (n = 4 to 64)</h3><div class="legend" id="lgProblem"></div></div>
+            <div class="chart" id="chProblem"></div>
+            <p class="muted small">Values are exact counts from the algorithm, not estimates.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 PARADIGM -->
+    <section class="slide" id="paradigm" aria-label="Divide and conquer">
+      <div class="slide-inner">
+        <header class="slide-head rv" style="--d:0"><h2>Divide, conquer, combine</h2><p class="sub">Three moves, repeated until the pieces are small enough to answer on sight.</p></header>
+        <div class="phases">
+          <article class="card phase p-divide rv" style="--d:1"><h3>Divide</h3><p>Split <code>A[low..high]</code> at <code>mid = &lfloor;(low + high) / 2&rfloor;</code> into a left and a right half.</p><span class="cost">0 comparisons</span></article>
+          <article class="card phase p-conquer rv" style="--d:2"><h3>Conquer</h3><p>Solve both halves recursively. Stop at <b>1 element</b> (min = max = that element) or <b>2 elements</b> (one comparison).</p><span class="cost">0 or 1 comparison per leaf</span></article>
+          <article class="card phase p-combine rv" style="--d:3"><h3>Combine</h3><p>Compare the two minimums, then the two maximums. Each combine step costs exactly two comparisons.</p><span class="cost">2 comparisons per merge</span></article>
+        </div>
+        <article class="card diagram-card rv" style="--d:4">
+          <div class="card-h"><h3>Watch it on 8 numbers</h3><div class="seg-row"><button class="btn sm" id="sdToggle">Pause</button><button class="btn sm" id="sdReplay">Replay</button></div></div>
+          <div class="sd-caption" id="sdCaption" aria-live="polite"></div>
+          <div class="sd" id="sd"></div>
+          <div class="sd-foot"><span>Total so far</span><b id="sdCount">0</b><span class="muted">comparisons</span></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 4 ALGORITHM -->
+    <section class="slide" id="algorithm" aria-label="Algorithm">
+      <div class="slide-inner">
+        <header class="slide-head rv" style="--d:0"><h2>The algorithm</h2><p class="sub">Read each line together with its note on the right. Hover a line to highlight it.</p></header>
+        <div class="two wide-left">
+          <article class="card rv" style="--d:1">
+            <div class="card-h">
+              <div class="tabs" role="tablist" id="codeTabs">
+                <button role="tab" aria-selected="true" data-tab="pseudo">Pseudocode</button>
+                <button role="tab" aria-selected="false" data-tab="python">Python</button>
+              </div>
+              <button class="btn sm" id="copyCode">Copy</button>
+            </div>
+            <div class="codelines" id="codeBlock"></div>
+          </article>
+          <div class="stack">
+            <article class="card rule rv" style="--d:2"><span class="rule-n">0</span><div><h3>One element</h3><p>It is the minimum and the maximum. No comparison.</p></div></article>
+            <article class="card rule rv" style="--d:3"><span class="rule-n">1</span><div><h3>Two elements</h3><p>One comparison orders the pair: the smaller is the min, the larger is the max.</p></div></article>
+            <article class="card rule rv" style="--d:4"><span class="rule-n">2</span><div><h3>Combine two halves</h3><p>One comparison for the minimums, one for the maximums.</p></div></article>
+            <article class="card callout rv" style="--d:5"><h3>Why stop at two elements?</h3><p>If the recursion went all the way down to single elements, every combine would still cost 2 and the total would be <b>2n &minus; 2</b>, no better than the scan. The pair base case is what gives <b>3n/2 &minus; 2</b>.</p></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 LAB -->
+    <section class="slide" id="lab" aria-label="Live lab">
+      <div class="slide-inner lab">
+        <div class="lab-head rv" style="--d:0">
+          <div><h2>Live lab <span class="engine"></span></h2><p class="sub">Enter any array. The tree grows and the solution writes itself, one comparison at a time.</p></div>
+          <form class="lab-input" id="labForm" autocomplete="off">
+            <label class="sr" for="labArr">Array values, separated by commas or spaces</label>
+            <input id="labArr" value="38, 12, 77, 5, 41, 90, 23, 66" spellcheck="false" inputmode="text">
+            <button class="btn primary" type="submit">Run</button>
+            <button class="btn" type="button" id="labRandom">Random</button>
+          </form>
+        </div>
+        <div class="presets rv" style="--d:1" id="presets" aria-label="Example arrays"></div>
+        <p class="form-error" id="labErr" role="alert" hidden></p>
+
+        <div class="controls glass rv" style="--d:2">
+          <div class="ctl-btns">
+            <button class="icon-btn" id="cRestart" title="Restart" aria-label="Restart"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 5v14M19 5L9 12l10 7z" fill="currentColor"/></svg></button>
+            <button class="icon-btn" id="cPrev" title="Previous step (&larr;)" aria-label="Previous step"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 5l-8 7 8 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="icon-btn play" id="cPlay" title="Play or pause (Space)" aria-label="Play"><svg viewBox="0 0 24 24" width="22" height="22" id="playIcon"><path d="M8 5l12 7-12 7z" fill="currentColor"/></svg></button>
+            <button class="icon-btn" id="cNext" title="Next step (&rarr;)" aria-label="Next step"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="icon-btn" id="cEnd" title="Skip to the end" aria-label="Skip to the end"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M19 5v14M5 5l10 7-10 7z" fill="currentColor"/></svg></button>
+          </div>
+          <div class="timeline"><input type="range" id="cTime" min="-1" max="0" value="-1" aria-label="Step timeline"><span id="cStep" class="step-label">Ready</span></div>
+          <div class="speed" role="group" aria-label="Speed" id="speedSeg">
+            <button data-s="0.5">0.5&times;</button><button data-s="1" class="on">1&times;</button><button data-s="2">2&times;</button><button data-s="4">4&times;</button>
+          </div>
+        </div>
+
+        <div class="lab-grid">
+          <div class="lab-left">
+            <article class="card rv" style="--d:3">
+              <div class="card-h"><h3>Array</h3>
+                <div class="legend legend-bars">
+                  <span><i class="sw sw-in"></i>in focus</span><span><i class="sw sw-cmp"></i>comparing</span><span><i class="sw sw-min"></i>min</span><span><i class="sw sw-max"></i>max</span>
+                </div>
+              </div>
+              <div class="bars" id="labBars"></div>
+            </article>
+            <article class="card tree-card rv" style="--d:4">
+              <div class="card-h"><h3>Recursion tree</h3><span class="muted small" id="treeNote">grows as the algorithm runs</span></div>
+              <div class="tree-wrap" id="treeWrap"><svg id="labTree" role="img" aria-label="Recursion tree"></svg></div>
+            </article>
+          </div>
+          <div class="lab-right">
+            <div class="stats rv" style="--d:3">
+              <div class="stat s-cmp"><span class="lbl">Comparisons</span><b id="sCmp">0</b><div class="meter"><i id="sMeter"></i></div><small id="sTarget"></small></div>
+              <div class="stat"><span class="lbl">Calls made</span><b id="sCalls">0</b><small id="sCallsOf"></small></div>
+              <div class="stat"><span class="lbl">Stack depth</span><b id="sDepth">0</b><small id="sDepthOf"></small></div>
+              <div class="stat reg reg-min"><span class="lbl">Current min</span><b id="rMin">&ndash;</b><small id="rMinSrc">&nbsp;</small></div>
+              <div class="stat reg reg-max"><span class="lbl">Current max</span><b id="rMax">&ndash;</b><small id="rMaxSrc">&nbsp;</small></div>
+            </div>
+            <article class="card solution-card rv" style="--d:4">
+              <div class="card-h"><h3>Solution, step by step</h3><span class="muted small">written live</span></div>
+              <div class="solution" id="solution" aria-live="polite"></div>
+              <div class="result" id="result" hidden></div>
+            </article>
+            <div class="code-stack rv" style="--d:5">
+              <article class="card"><h3>Pseudocode</h3><ol class="pc" id="labCode"></ol></article>
+              <article class="card"><h3>Call stack</h3><div class="cstack" id="labStack"></div></article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 RECURRENCE -->
+    <section class="slide" id="recurrence" aria-label="Recurrence">
+      <div class="slide-inner">
+        <header class="slide-head rv" style="--d:0"><h2>From recurrence to 3n/2 &minus; 2</h2><p class="sub">The cost function, solved by repeated substitution and checked with the Master theorem.</p></header>
+        <div class="two wide-left">
+          <article class="card derive rv" style="--d:1">
+            <div class="card-h"><h3>Derivation, written live</h3>
+              <div class="seg-row"><button class="btn sm" id="dvNext">Next step</button><button class="btn sm" id="dvAuto">Write all</button><button class="btn sm" id="dvReset">Reset</button></div>
+            </div>
+            <div class="derivation" id="derivation" aria-live="polite"></div>
+          </article>
+          <div class="stack">
+            <article class="card rv" style="--d:2">
+              <h3>The recurrence</h3>
+              <div class="math">T(n) = T(&lceil;n/2&rceil;) + T(&lfloor;n/2&rfloor;) + 2</div>
+              <div class="math">T(1) = 0, &nbsp; T(2) = 1</div>
+              <p class="muted small">Two sub-problems of half the size plus two comparisons to combine them.</p>
+            </article>
+            <article class="card rv" style="--d:3">
+              <h3>Master theorem check</h3>
+              <ul class="mt">
+                <li>a = 2, b = 2, f(n) = &Theta;(1)</li>
+                <li>n<sup>log<sub>b</sub>a</sup> = n<sup>1</sup> = n</li>
+                <li>f(n) = O(n<sup>1&minus;&epsilon;</sup>) with &epsilon; = 1, so Case 1</li>
+                <li class="mt-res">T(n) = &Theta;(n)</li>
+              </ul>
+            </article>
+            <article class="card callout rv" style="--d:4">
+              <h3>Check it in the lab</h3>
+              <p>For n = 8 the formula gives 3&middot;8/2 &minus; 2 = 10 comparisons.</p>
+              <button class="btn primary sm" data-go="lab" data-load="38,12,77,5,41,90,23,66">Run n = 8 in the lab</button>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 TREE AND STACK -->
+    <section class="slide" id="tree" aria-label="Tree and stack">
+      <div class="slide-inner">
+        <header class="slide-head rv" style="--d:0"><h2>Where the comparisons are spent</h2><p class="sub">Count the work level by level, then see how little stack the recursion needs.</p></header>
+        <div class="two">
+          <article class="card chart-card rv" style="--d:1">
+            <div class="card-h"><h3>Comparisons per tree level</h3></div>
+            <div class="slider-row"><label for="lvN">Array size n</label><input type="range" id="lvN" min="2" max="64" value="16"><output id="lvNOut">16</output></div>
+            <div class="chart" id="chLevels"></div>
+            <p class="level-sum" id="lvSum"></p>
+          </article>
+          <article class="card chart-card rv" style="--d:2">
+            <div class="card-h"><h3>Stack frames needed</h3></div>
+            <div class="chart" id="chStack"></div>
+            <p class="muted">The recursion goes about log<sub>2</sub> n calls deep, so the auxiliary space is <b>O(log n)</b>. Doubling n adds a single frame.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 GROWTH -->
+    <section class="slide" id="growth" aria-label="Growth of comparisons">
+      <div class="slide-inner">
+        <header class="slide-head rv" style="--d:0"><h2>How the comparison count grows</h2><p class="sub">Hover the chart to read exact values. Click a legend item to hide a line.</p></header>
+        <div class="two wide-left">
+          <article class="card chart-card rv" style="--d:1">
+            <div class="card-h"><h3>T(n) for n = 2 to 64</h3><div class="legend" id="lgGrowth"></div></div>
+            <div class="chart tall" id="chGrowth"></div>
+          </article>
+          <div class="stack">
+            <article class="card rv" style="--d:2"><h3>Powers of two are exact</h3><p>For n = 2<sup>k</sup> the dots sit on the line 3n/2 &minus; 2. At n = 64 that is 94 comparisons against 126 for the scan.</p></article>
+            <article class="card rv" style="--d:3"><h3>Other sizes cost a little more</h3><p>The count stays between 3n/2 &minus; 2 and 5n/3 &minus; 2. The worst case is n = 3&middot;2<sup>k</sup>: for n = 6 the algorithm uses 8 comparisons, not 7.</p><button class="btn sm" data-go="lab" data-load="9,4,7,1,8,3">Run n = 6 in the lab</button></article>
+            <article class="card rv" style="--d:4"><h3>It never depends on the data</h3><p>Sorted, reversed or random input all cost the same T(n). Best, average and worst case are identical.</p></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 COMPARE -->
+    <section class="slide" id="compare" aria-label="Compare">
+      <div class="slide-inner">
+        <header class="slide-head rv" style="--d:0"><h2>Scan versus divide and conquer</h2><p class="sub">Drag the slider and watch the gap.</p></header>
+        <div class="two">
+          <article class="card rv" style="--d:1">
+            <div class="slider-row"><label for="cmN">Array size n</label><input type="range" id="cmN" min="2" max="128" value="16"><output id="cmNOut">16</output></div>
+            <div class="hbars" id="hbars"></div>
+            <div class="saving" id="saving"></div>
+          </article>
+          <article class="card chart-card rv" style="--d:2">
+            <div class="card-h"><h3>Comparisons saved versus the scan</h3></div>
+            <div class="chart" id="chSaving"></div>
+            <p class="muted small">Powers of two save a little over 25%, easing toward 25% as n grows. Sizes 3&middot;2<sup>k</sup> save the least, easing toward 16.7%.</p>
+          </article>
+        </div>
+        <article class="card callout wide rv" style="--d:3"><h3>Is it optimal?</h3><p>Any algorithm that finds both the minimum and the maximum by comparing elements needs at least <b>&lceil;3n/2&rceil; &minus; 2</b> comparisons (Pohl, 1972; also in CLRS, section 9.1). Divide and conquer reaches that bound for every n = 2<sup>k</sup>, so there it cannot be beaten.</p></article>
+      </div>
+    </section>
+
+    <!-- 10 TESTS -->
+    <section class="slide" id="tests" aria-label="Tests">
+      <div class="slide-inner">
+        <header class="slide-head rv" style="--d:0"><h2>Test cases</h2><p class="sub"><span class="engine"></span> Every row runs the same algorithm as the lab and is checked against a built-in min and max and an independent copy of the recurrence.</p></header>
+        <div class="tests-top rv" style="--d:1">
+          <button class="btn primary" id="tRun">Run all tests</button>
+          <div class="stress card"><div><b id="stressTitle">Stress test</b><div class="muted small" id="stressSub">2,000 random arrays, 1 to 40 elements, with negatives and duplicates</div></div><button class="btn sm" id="tStress">Run stress test</button><div class="stress-bar"><i id="stressBar"></i></div></div>
+        </div>
+        <div class="table-wrap rv" style="--d:2"><table class="tests" id="testTable"><thead><tr><th>Scenario</th><th>Input</th><th>n</th><th>Min</th><th>Max</th><th>Comparisons</th><th>Expected T(n)</th><th>Result</th><th></th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- 11 VIVA -->
+    <section class="slide" id="viva" aria-label="Questions and answers">
+      <div class="slide-inner">
+        <header class="slide-head rv" style="--d:0"><h2>Questions you may be asked</h2><p class="sub">Short answers, ready to say out loud. Click a question to open it.</p></header>
+        <div class="qa" id="qa"></div>
+      </div>
+    </section>
+
+    <!-- 12 END -->
+    <section class="slide" id="end" aria-label="Summary">
+      <div class="slide-inner end">
+        <header class="slide-head rv" style="--d:0"><h2>What to remember</h2></header>
+        <div class="takeaways">
+          <article class="card rv" style="--d:1"><h3>The idea</h3><p>Cut the array in half again and again. Find the smallest and largest of each small piece, then join the pieces.</p></article>
+          <article class="card rv" style="--d:2"><h3>Counting comparisons</h3><p>A piece with 1 number needs 0 comparisons. A piece with 2 numbers needs 1. Joining two pieces needs 2.</p></article>
+          <article class="card rv" style="--d:3"><h3>The result</h3><p>For n = 2<sup>k</sup> we need only <b>3n/2 &minus; 2</b> comparisons. The simple loop needs 2(n &minus; 1). That is about 25% fewer.</p></article>
+          <article class="card rv" style="--d:4"><h3>Cost and limit</h3><p>Time is &Theta;(n) and extra memory is O(log n). No method that compares numbers can do better than &lceil;3n/2&rceil; &minus; 2.</p></article>
+        </div>
+        <div class="thanks rv" style="--d:5">
+          <h2 class="big">Thank you. Questions?</h2>
+          <div class="team" id="teamEnd"></div>
+          <p class="muted" id="metaEnd"></p>
+          <div class="hero-cta"><button class="btn primary" data-go="lab">Back to the live lab</button><button class="btn" data-go="home">Back to the start</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="nav-arrows" aria-label="Slide navigation">
+    <button class="icon-btn" id="navPrev" aria-label="Previous section"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 5l-8 7 8 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="icon-btn" id="navNext" aria-label="Next section"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+
+  <div class="modal" id="help" hidden>
+    <div class="modal-card glass" role="dialog" aria-label="Keyboard shortcuts">
+      <h3>Keyboard shortcuts</h3>
+      <dl>
+        <dt><kbd>&larr;</kbd> <kbd>&rarr;</kbd></dt><dd>Previous or next section (steps the algorithm while the live lab is open)</dd>
+        <dt><kbd>Page Up</kbd> <kbd>Page Down</kbd></dt><dd>Previous or next section, everywhere</dd>
+        <dt><kbd>Space</kbd></dt><dd>Play or pause the live lab</dd>
+        <dt><kbd>1</kbd> &ndash; <kbd>9</kbd></dt><dd>Jump to a section</dd>
+        <dt><kbd>F</kbd></dt><dd>Full screen</dd>
+        <dt><kbd>T</kbd></dt><dd>Light or dark theme</dd>
+      </dl>
+      <button class="btn primary" id="helpClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
