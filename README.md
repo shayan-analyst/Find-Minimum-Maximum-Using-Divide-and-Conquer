@@ -4,6 +4,8 @@ An interactive web-based visualization of the **Divide and Conquer algorithm** f
 
 This project was developed as an **instructor-assigned academic project** for the **Design and Analysis of Algorithms (DAA)** course.
 
+https://shayan-analyst.github.io/Find-Minimum-Maximum-Using-Divide-and-Conquer/#home
+
 ## Features
 
 - Interactive algorithm visualization
