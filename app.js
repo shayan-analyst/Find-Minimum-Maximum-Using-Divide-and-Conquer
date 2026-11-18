@@ -8,7 +8,7 @@ const CONFIG = {
   date: '3 December 2026',
   university: '',          // e.g. 'Your University'
   instructor: '',          // e.g. 'Instructor name'
-  members: ['Shayan Shamim', 'Shayan Khan', 'Hasnain Raza']
+  members: ['Muhammad Shayan Shamim', 'Shayan Khan', 'Hasnain Raza']
 };
 
 /* ================= helpers ================= */
